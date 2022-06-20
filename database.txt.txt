@@ -1,0 +1,45 @@
+DROP TABLE user_details;
+
+CREATE TABLE user_details
+(
+    user_id    CHARACTER VARYING(5),
+    account_no INTEGER UNIQUE,
+    password   CHARACTER VARYING,
+    CONSTRAINT user_details_pk PRIMARY KEY (user_id, account_no)
+);
+
+    SELECT *
+    FROM user_details;
+
+DROP TABLE account_details;
+
+CREATE TABLE account_details
+(
+    account_no        INTEGER,
+    available_balance DOUBLE PRECISION,
+    CONSTRAINT account_no_pk PRIMARY KEY (account_no),
+    CONSTRAINT account_no_fk FOREIGN KEY (account_no) REFERENCES user_details (account_no)
+);
+
+SELECT *
+FROM account_details;
+
+INSERT INTO account_details (account_no, available_balance) values (105, 1000);
+
+DROP TABLE transaction_details;
+
+CREATE TABLE transaction_details
+(
+    account_no         INTEGER,
+    transaction_flag   CHAR VARYING(1),
+    transaction_amount DOUBLE PRECISION,
+    reference_number   INTEGER,
+    CONSTRAINT transaction_details_pk PRIMARY KEY (account_no, transaction_flag, reference_number),
+    CONSTRAINT account_no_fk FOREIGN KEY (account_no) REFERENCES user_details (account_no)
+);
+
+SELECT *
+FROM transaction_details;
+
+
+SELECT a.available_balance FROM account_details as a WHERE account_no =103

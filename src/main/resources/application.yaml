@@ -1,0 +1,20 @@
+server:
+  port: 8081
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/transaction_demo
+    hikari:
+      username: bari
+      password: bari
+      maximum-pool-size: 5
+      idle-timeout: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+      spring:
+        main:
+          allow-bean-definition-overriding: true
+debug: false
+

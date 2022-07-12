@@ -19,12 +19,7 @@ public class UserService {
     public void createAccount(SignUpRequest request) {
 
         Optional<User> optionalUser = userRepository.findByUserIdUserId(request.getUserId());
-        //optionalUser.orElseThrow(() -> new DuplicateEntityException("user already exists"));
-//        optionalUser.ifPresent(s -> {
-//            throw new DuplicateEntityException("user already exists");
-//        });
-
-        if (optionalUser.isPresent()){
+        if (optionalUser.isPresent()) {
             throw new DuplicateEntityException("user already exists");
         }
 

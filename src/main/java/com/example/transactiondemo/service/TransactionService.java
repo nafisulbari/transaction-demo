@@ -10,15 +10,16 @@ import com.example.transactiondemo.dto.response.TransactionResponse;
 import com.example.transactiondemo.entity.AccountDetails;
 import com.example.transactiondemo.entity.TransactionDetails;
 import com.example.transactiondemo.entity.TransactionDetailsId;
+import com.example.transactiondemo.exception.EntityNotFoundException;
 import com.example.transactiondemo.repository.AccountDetailsRepository;
 import com.example.transactiondemo.repository.TransactionDetailsRepository;
-import com.example.transactiondemo.repository.UserRepository;
 import com.example.transactiondemo.util.RandomUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TransactionService {
@@ -30,11 +31,11 @@ public class TransactionService {
     private TransactionDetailsRepository transactionDetailsRepository;
 
     public FundTransferResponse fundTransfer(FundTransferRequest request) {
-        AccountDetails debitAccount = accountDetailsRepository.findByAccountNo(request.getFromAccount());
+        AccountDetails debitAccount = getAccountDetailsByAccountNo(request.getToAccount());
         debitAccount.setAvailableBalance(debitAccount.getAvailableBalance() - request.getAmount());
         accountDetailsRepository.save(debitAccount);
 
-        AccountDetails creditAccount = accountDetailsRepository.findByAccountNo(request.getToAccount());
+        AccountDetails creditAccount = getAccountDetailsByAccountNo(request.getToAccount());
         creditAccount.setAvailableBalance(creditAccount.getAvailableBalance() + request.getAmount());
         accountDetailsRepository.save(creditAccount);
 
@@ -78,22 +79,32 @@ public class TransactionService {
 
     public BalanceResponse checkBalance(BalanceRequest request) {
 
-        double balance = accountDetailsRepository.getBalanceByAccountNo(request.getAccountNo());
+        AccountDetails accountDetails = getAccountDetailsByAccountNo(request.getAccountNo());
+        double balance = accountDetails.getAvailableBalance();
 
         return new BalanceResponse(balance);
     }
 
     public TransactionHistoryResponse getTransactionHistory(TransactionHistoryRequest request) {
 
-         List<TransactionDetails> transactionDetails =
-                 transactionDetailsRepository.getTransactionDetailsByTransactionDetailsId_AccountNo(request.getAccountNo());
+        List<TransactionDetails> transactionDetails =
+                transactionDetailsRepository.getTransactionDetailsByTransactionDetailsId_AccountNo(request.getAccountNo());
 
-         List<TransactionResponse> transactionList = new ArrayList<>();
-         transactionDetails.forEach(td ->{
-             transactionList.add(new TransactionResponse(td.getTransactionAmount(),
-                     td.getTransactionDetailsId().getReferenceNumber(),
-                     td.getTransactionDetailsId().getTransactionFlag()));
-         });
-         return new TransactionHistoryResponse(transactionList);
+        List<TransactionResponse> transactionList = new ArrayList<>();
+        transactionDetails.forEach(td -> {
+            transactionList.add(new TransactionResponse(td.getTransactionAmount(),
+                    td.getTransactionDetailsId().getReferenceNumber(),
+                    td.getTransactionDetailsId().getTransactionFlag()));
+        });
+        return new TransactionHistoryResponse(transactionList);
+    }
+
+    private AccountDetails getAccountDetailsByAccountNo(int accountNo) {
+        Optional<AccountDetails> optionalAccountDetails = accountDetailsRepository.findByAccountNo(accountNo);
+        if (!optionalAccountDetails.isPresent()) {
+            throw new EntityNotFoundException("Account details not found");
+        }
+
+        return optionalAccountDetails.get();
     }
 }

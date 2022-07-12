@@ -6,10 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface AccountDetailsRepository extends JpaRepository<AccountDetails, Integer> {
 
-    AccountDetails findByAccountNo(int accountNo);
+    Optional<AccountDetails> findByAccountNo(int accountNo);
 
     @Query("select a.availableBalance " +
             "from AccountDetails a " +
